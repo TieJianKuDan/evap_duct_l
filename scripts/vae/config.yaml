@@ -1,0 +1,39 @@
+data:
+  val_ratio: 0.1
+  test_ratio: 0.2
+  seed: 2333
+model:
+  in_channels: 3
+  out_channels: 3
+  block_out_channels: [128, 256, 512, 512]
+  layers_per_block: 2
+  act_fu: "silu"
+  latent_channels: 64
+  norm_num_groups: 32
+  sample_size: 
+loss:
+  disc_start: 50001
+  kl_weight: 1e-6
+  disc_weight: 0.5
+  perceptual_weight: 0.1
+  disc_in_channels: 3
+opt:
+  batch_size: 8
+  float32_matmul_precision: "high"
+  seed: 0
+  method: "adam"
+  lr: 5e-6
+  betas: [0.5, 0.9]
+  gradient_clip_val: 1.0
+  max_epochs: 500
+  # scheduler
+  warmup_percentage: 0.1
+  lr_scheduler_mode: "cosine"
+  min_lr_ratio: 1.0e-3
+  warmup_min_lr_ratio: 0.1
+  # early stopping
+  monitor: "val/total_loss"
+  early_stop: false
+  early_stop_mode: "min"
+  early_stop_patience: 5
+  save_top_k: 5
