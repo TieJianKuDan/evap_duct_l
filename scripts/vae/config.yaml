@@ -1,26 +1,30 @@
-data:
+seed: 2333
+dataset:
   val_ratio: 0.1
   test_ratio: 0.2
-  seed: 2333
+  num_workers: 6
+  persistent_workers: True
 model:
   in_channels: 3
   out_channels: 3
   block_out_channels: [128, 256, 512, 512]
+  down_block_types: ['DownEncoderBlock2D', 'DownEncoderBlock2D', 'DownEncoderBlock2D', 'DownEncoderBlock2D']
+  up_block_types: ['UpDecoderBlock2D', 'UpDecoderBlock2D', 'UpDecoderBlock2D', 'UpDecoderBlock2D']
   layers_per_block: 2
   act_fu: "silu"
   latent_channels: 64
   norm_num_groups: 32
-  sample_size: 
 loss:
   disc_start: 50001
   kl_weight: 1e-6
   disc_weight: 0.5
   perceptual_weight: 0.1
   disc_in_channels: 3
-opt:
+optim:
+  accelerator: "gpu"
+  precision: "16-mixed"
   batch_size: 8
-  float32_matmul_precision: "high"
-  seed: 0
+  float32_matmul_precision: "medium"
   method: "adam"
   lr: 5e-6
   betas: [0.5, 0.9]

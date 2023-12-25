@@ -1,6 +1,6 @@
 import os
 
-root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 default_exps_dir = os.path.abspath(os.path.join(root_dir, "experiments"))
 

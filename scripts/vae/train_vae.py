@@ -1,23 +1,64 @@
-from matplotlib import pyplot as plt
-from omegaconf import OmegaConf, dictconfig
-from pytorch_lightning import Trainer
+import sys
+sys.path.append("./")
 
-from scripts.vae.vae_pl import VAEPLM, CelebaPLDM
+import torch
+from omegaconf import OmegaConf
+from pytorch_lightning import Trainer, callbacks, loggers, seed_everything
 
-oc_from_file = OmegaConf.load(open("config.yaml", "r"))
-data_config = oc_from_file.data
-model_config = oc_from_file.model
-loss_config = oc_from_file.loss
-opt_config = oc_from_file.opt
+from core.vae.vae_pl import VAEPLM
+from scripts.vae.dm import CelebaPLDM
 
-dm = CelebaPLDM(data_config, opt_config.batch_size)
-dm.setup()
 
-total_num_steps = \
-    dm.train_sample_num * opt_config.max_epochs / opt_config.batch_size
+def main():
+    config = OmegaConf.load(open("scripts/vae/config.yaml", "r"))
+    seed_everything(
+        seed=config.seed,
+        workers=True
+    )
+    torch.set_float32_matmul_precision(
+        config.optim.float32_matmul_precision
+    )
 
-net = VAEPLM(model_config, loss_config, opt_config, total_num_steps)
+    # data
+    dm = CelebaPLDM(
+        config.dataset, 
+        config.optim.batch_size,
+        config.seed
+    )
+    dm.setup()
 
-trainer = Trainer(max_epochs=opt_config.max_epochs)
+    total_num_steps = \
+        dm.train_sample_num * config.optim.max_epochs / config.optim.batch_size
 
-trainer.fit(net, dm)
+    # model
+    net = VAEPLM(config.model, config.loss, config.optim, total_num_steps)
+
+    # trainer
+    trainer = Trainer(
+        max_epochs=config.optim.max_epochs,
+        accelerator=config.optim.accelerator,
+        logger=[
+            loggers.TensorBoardLogger(
+                "./logs/tb",
+                name="mnist",
+            )
+        ],
+        precision=config.optim.precision,
+        enable_checkpointing=True,
+        callbacks=[
+            callbacks.ModelCheckpoint(
+                dirpath="checkpoints",
+                monitor=config.optim.monitor
+            ),
+            callbacks.EarlyStopping(
+                monitor=config.optim.monitor,
+                patience=10,
+            )
+        ],
+        deterministic="warn"
+    )
+
+    trainer.fit(net, dm)
+
+if __name__ == "__main__":
+    main()

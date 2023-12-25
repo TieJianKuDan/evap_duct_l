@@ -2,3 +2,5 @@
 datasets/
 test.py
 __pycache__/
+logs/
+pretrained/

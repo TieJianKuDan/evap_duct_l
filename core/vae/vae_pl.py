@@ -1,97 +1,12 @@
-import os
-
 import numpy as np
 import pytorch_lightning as pl
 import torch
-from PIL import Image
 from torch.optim.lr_scheduler import CosineAnnealingLR, LambdaLR, SequentialLR
-from torch.utils.data import DataLoader, Dataset, random_split
-from torchvision import transforms
 
 from core.utils.optim import warmup_lambda
-from core.vae import AutoencoderKL, LPIPSWithDiscriminator
 
+from . import AutoencoderKL, LPIPSWithDiscriminator
 
-class CelebADataset(Dataset):
-
-    def __init__(self, root, img_shape=(64, 64)) -> None:
-        super().__init__()
-        self.root = root
-        self.img_shape = img_shape
-        self.filenames = sorted(os.listdir(root))
-
-    def __len__(self) -> int:
-        return len(self.filenames)
-
-    def __getitem__(self, index: int):
-        path = os.path.join(self.root, self.filenames[index])
-        img = Image.open(path).convert('RGB')
-        pipeline = transforms.Compose([
-            transforms.CenterCrop(168),
-            transforms.Resize(self.img_shape),
-            transforms.ToTensor()
-        ])
-        return pipeline(img)
-
-
-class CelebaPLDM(pl.LightningDataModule):
-
-    def __init__(self, data_config, batch_size):
-        self.data_dir = \
-            R"D:\Projects\atmosphere\evap_duct_l\datasets\img_align_celeba"
-        self.val_ratio = data_config.val_ratio
-        self.test_ratio = data_config.test_ratio
-        self.batch_size = batch_size
-        self.seed = data_config.seed
-
-    def prepare_data(self):
-        pass
-
-    def setup(self, stage=None):
-        datasets = CelebADataset(self.data_dir)
-        self.train_set, self.val_set, self.test_set = \
-            random_split(
-                datasets, 
-                [
-                    1 - self.val_ratio - self.test_ratio, 
-                    self.val_ratio, 
-                    self.test_ratio
-                ], 
-                generator=torch.Generator().manual_seed(self.seed)
-            )
-
-    def train_dataloader(self):
-        return DataLoader(
-            self.train_set, 
-            batch_size=self.batch_size, 
-            shuffle=True
-        )
-
-    def val_dataloader(self):
-        return DataLoader(
-            self.val_set, 
-            batch_size=self.batch_size, 
-            shuffle=True
-        )
-
-    def test_dataloader(self):
-        return DataLoader(
-            self.test_set, 
-            batch_size=self.batch_size, 
-            shuffle=True
-        )
-
-    @property
-    def train_sample_num(self):
-        return len(self.train_set)
-    
-    @property
-    def val_sample_num(self):
-        return len(self.val_set)
-    
-    @property
-    def test_sample_num(self):
-        return len(self.test_set)
 
 class VAEPLM(pl.LightningModule):
     
@@ -109,6 +24,8 @@ class VAEPLM(pl.LightningModule):
             out_channels=model_config.out_channels,
             block_out_channels=model_config.block_out_channels,
             layers_per_block=model_config.layers_per_block,
+            down_block_types=model_config.down_block_types,
+            up_block_types=model_config.up_block_types,
             act_fn=model_config.act_fu,
             latent_channels=model_config.latent_channels,
             norm_num_groups=model_config.norm_num_groups
@@ -123,6 +40,7 @@ class VAEPLM(pl.LightningModule):
 
         self.opt_config = opt_config
         self.total_num_steps = total_num_steps
+        self.automatic_optimization = False
 
     def forward(self, x, sample_posterior=True):
         return self.model(
