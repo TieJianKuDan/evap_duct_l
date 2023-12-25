@@ -1,5 +1,7 @@
+from typing import Any
 import numpy as np
 import pytorch_lightning as pl
+from pytorch_lightning.utilities.types import STEP_OUTPUT
 import torch
 from torch.optim.lr_scheduler import CosineAnnealingLR, LambdaLR, SequentialLR
 
@@ -41,6 +43,7 @@ class VAEPLM(pl.LightningModule):
         self.opt_config = opt_config
         self.total_num_steps = total_num_steps
         self.automatic_optimization = False
+        self.save_hyperparameters = True
 
     def forward(self, x, sample_posterior=True):
         return self.model(
@@ -99,6 +102,114 @@ class VAEPLM(pl.LightningModule):
         self.manual_backward(dis_loss)
         opt_disc.step()
         lr_disc.step()
+        self.log(
+            "dis_loss", 
+            dis_loss, 
+            prog_bar=True, 
+            logger=True,
+            on_step=True, 
+            on_epoch=True, 
+            sync_dist=False
+        )
+        self.log_dict(
+            log, 
+            prog_bar=False, 
+            logger=True,
+            on_step=True, 
+            on_epoch=False, 
+            sync_dist=False
+        )
+
+    def validation_step(self, batch, batch_idx):
+        rec, posterior = self(batch)
+        gen_loss, log = self.loss(
+            batch, 
+            rec, 
+            posterior, 
+            0, 
+            self.global_step, 
+            last_layer=self.get_last_layer()
+        )
+        self.log(
+            "gen_loss", 
+            gen_loss, 
+            prog_bar=True, 
+            logger=True,
+            on_step=True, 
+            on_epoch=True, 
+            sync_dist=False
+        )
+        self.log_dict(
+            log, 
+            prog_bar=False, 
+            logger=True,
+            on_step=True, 
+            on_epoch=False, 
+            sync_dist=False
+        )
+
+        dis_loss, log = self.loss(
+            batch, 
+            rec, 
+            posterior, 
+            1, 
+            self.global_step, 
+            last_layer=self.get_last_layer()
+        )
+        self.log(
+            "dis_loss", 
+            dis_loss, 
+            prog_bar=True, 
+            logger=True,
+            on_step=True, 
+            on_epoch=True, 
+            sync_dist=False
+        )
+        self.log_dict(
+            log, 
+            prog_bar=False, 
+            logger=True,
+            on_step=True, 
+            on_epoch=False, 
+            sync_dist=False
+        )
+
+    def test_step(self, batch, batch_idx):
+        rec, posterior = self(batch)
+        gen_loss, log = self.loss(
+            batch, 
+            rec, 
+            posterior, 
+            0, 
+            self.global_step, 
+            last_layer=self.get_last_layer()
+        )
+        self.log(
+            "gen_loss", 
+            gen_loss, 
+            prog_bar=True, 
+            logger=True,
+            on_step=True, 
+            on_epoch=True, 
+            sync_dist=False
+        )
+        self.log_dict(
+            log, 
+            prog_bar=False, 
+            logger=True,
+            on_step=True, 
+            on_epoch=False, 
+            sync_dist=False
+        )
+
+        dis_loss, log = self.loss(
+            batch, 
+            rec, 
+            posterior, 
+            1, 
+            self.global_step, 
+            last_layer=self.get_last_layer()
+        )
         self.log(
             "dis_loss", 
             dis_loss, 

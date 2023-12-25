@@ -40,7 +40,7 @@ def main():
         logger=[
             loggers.TensorBoardLogger(
                 "./logs/tb",
-                name="mnist",
+                name="celeba",
             )
         ],
         precision=config.optim.precision,
@@ -52,7 +52,7 @@ def main():
             ),
             callbacks.EarlyStopping(
                 monitor=config.optim.monitor,
-                patience=10,
+                patience=config.optim.patience,
             )
         ],
         deterministic="warn"
