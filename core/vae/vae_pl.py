@@ -43,7 +43,7 @@ class VAEPLM(pl.LightningModule):
         self.opt_config = opt_config
         self.total_num_steps = total_num_steps
         self.automatic_optimization = False
-        self.save_hyperparameters = True
+        self.save_hyperparameters()
 
     def forward(self, x, sample_posterior=True):
         return self.model(
