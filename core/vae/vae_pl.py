@@ -73,12 +73,12 @@ class VAEPLM(pl.LightningModule):
         opt_ae.step()
         lr_ae.step()
         self.log(
-            "gen_loss", 
+            "train_gen", 
             gen_loss, 
             prog_bar=True, 
             logger=True,
             on_step=True, 
-            on_epoch=True, 
+            on_epoch=False, 
             sync_dist=False
         )
         self.log_dict(
@@ -103,12 +103,12 @@ class VAEPLM(pl.LightningModule):
         opt_disc.step()
         lr_disc.step()
         self.log(
-            "dis_loss", 
+            "train_dis", 
             dis_loss, 
             prog_bar=True, 
             logger=True,
             on_step=True, 
-            on_epoch=True, 
+            on_epoch=False, 
             sync_dist=False
         )
         self.log_dict(
@@ -128,14 +128,15 @@ class VAEPLM(pl.LightningModule):
             posterior, 
             0, 
             self.global_step, 
-            last_layer=self.get_last_layer()
+            last_layer=self.get_last_layer(),
+            split="val"
         )
         self.log(
-            "gen_loss", 
+            "val_gen", 
             gen_loss, 
             prog_bar=True, 
             logger=True,
-            on_step=True, 
+            on_step=False, 
             on_epoch=True, 
             sync_dist=False
         )
@@ -143,8 +144,8 @@ class VAEPLM(pl.LightningModule):
             log, 
             prog_bar=False, 
             logger=True,
-            on_step=True, 
-            on_epoch=False, 
+            on_step=False, 
+            on_epoch=True, 
             sync_dist=False
         )
 
@@ -154,14 +155,15 @@ class VAEPLM(pl.LightningModule):
             posterior, 
             1, 
             self.global_step, 
-            last_layer=self.get_last_layer()
+            last_layer=self.get_last_layer(),
+            split="val"
         )
         self.log(
-            "dis_loss", 
+            "val_dis", 
             dis_loss, 
             prog_bar=True, 
             logger=True,
-            on_step=True, 
+            on_step=False, 
             on_epoch=True, 
             sync_dist=False
         )
@@ -169,8 +171,8 @@ class VAEPLM(pl.LightningModule):
             log, 
             prog_bar=False, 
             logger=True,
-            on_step=True, 
-            on_epoch=False, 
+            on_step=False, 
+            on_epoch=True, 
             sync_dist=False
         )
 
@@ -182,14 +184,15 @@ class VAEPLM(pl.LightningModule):
             posterior, 
             0, 
             self.global_step, 
-            last_layer=self.get_last_layer()
+            last_layer=self.get_last_layer(),
+            split="val"
         )
         self.log(
             "gen_loss", 
             gen_loss, 
             prog_bar=True, 
             logger=True,
-            on_step=True, 
+            on_step=False, 
             on_epoch=True, 
             sync_dist=False
         )
@@ -197,8 +200,8 @@ class VAEPLM(pl.LightningModule):
             log, 
             prog_bar=False, 
             logger=True,
-            on_step=True, 
-            on_epoch=False, 
+            on_step=False, 
+            on_epoch=True, 
             sync_dist=False
         )
 
@@ -208,14 +211,15 @@ class VAEPLM(pl.LightningModule):
             posterior, 
             1, 
             self.global_step, 
-            last_layer=self.get_last_layer()
+            last_layer=self.get_last_layer(),
+            split="val"
         )
         self.log(
             "dis_loss", 
             dis_loss, 
             prog_bar=True, 
             logger=True,
-            on_step=True, 
+            on_step=False, 
             on_epoch=True, 
             sync_dist=False
         )
@@ -223,8 +227,8 @@ class VAEPLM(pl.LightningModule):
             log, 
             prog_bar=False, 
             logger=True,
-            on_step=True, 
-            on_epoch=False, 
+            on_step=False, 
+            on_epoch=True, 
             sync_dist=False
         )
 

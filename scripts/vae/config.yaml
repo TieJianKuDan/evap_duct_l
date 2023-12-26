@@ -1,6 +1,6 @@
 seed: 2333
 dataset:
-  val_ratio: 0.1
+  val_ratio: 0.2
   test_ratio: 0.2
   num_workers: 6
   persistent_workers: True
@@ -15,7 +15,7 @@ model:
   latent_channels: 64
   norm_num_groups: 32
 loss:
-  disc_start: 50001
+  disc_start: 10001
   kl_weight: 1e-6
   disc_weight: 0.5
   perceptual_weight: 0.1
@@ -23,7 +23,7 @@ loss:
 optim:
   accelerator: "gpu"
   precision: "16-mixed"
-  batch_size: 32
+  batch_size: 64
   float32_matmul_precision: "medium"
   method: "adam"
   lr: 1e-3

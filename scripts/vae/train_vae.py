@@ -39,7 +39,7 @@ def main():
         accelerator=config.optim.accelerator,
         logger=[
             loggers.TensorBoardLogger(
-                "./logs/tb",
+                "./logs/tb/vae",
                 name="celeba",
             )
         ],
@@ -47,7 +47,7 @@ def main():
         enable_checkpointing=True,
         callbacks=[
             callbacks.ModelCheckpoint(
-                dirpath="checkpoints",
+                dirpath="checkpoints/vae",
                 monitor=config.optim.monitor
             ),
             callbacks.EarlyStopping(
@@ -55,7 +55,7 @@ def main():
                 patience=config.optim.patience,
             )
         ],
-        deterministic="warn"
+        deterministic="warn",
     )
 
     trainer.fit(net, dm)
