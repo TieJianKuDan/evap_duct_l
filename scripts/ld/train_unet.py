@@ -58,7 +58,7 @@ def main():
         deterministic="warn",
     )
 
-    trainer.fit(net, dm)
+    trainer.fit(net, dm, ckpt_path="ckp/ld/best.ckpt")
 
 if __name__ == "__main__":
     main()

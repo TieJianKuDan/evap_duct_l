@@ -82,6 +82,8 @@ class CTUnetPL(pl.LightningModule):
         self.optim_config = optim_config
         self.total_num_steps = total_num_steps
 
+        self.save_hyperparameters()
+
     def register_schedule(
             self,
             given_betas=None, 
@@ -143,6 +145,23 @@ class CTUnetPL(pl.LightningModule):
                 x_start.shape
             ) * 
             noise
+        )
+
+    def i_q_sample(self, xt, t, noise):
+        return (
+            (
+                xt - self.extract_into_tensor(
+                self.sqrt_one_minus_alphas_cumprod, 
+                t, 
+                xt.shape
+                ) * 
+                noise
+            ) / 
+            self.extract_into_tensor(
+                self.sqrt_alphas_cumprod, 
+                t, 
+                xt.shape
+            )
         )
 
     def forward(self, x, t):
