@@ -24,10 +24,7 @@ def main():
     test_loader = DataLoader(test_set, 8, True)
 
     # model
-    net = CTUnetPL.load_from_checkpoint(
-        "ckp/ld/best.ckpt", 
-        hparams_file="logs/tb/ld/celeba/version_1/hparams.yaml"
-    )
+    net = CTUnetPL.load_from_checkpoint("ckp/ld/best.ckpt")
 
     x0 = next(iter(test_loader)).to(net.device)
     x0 = x0.permute(0, 2, 3, 1).unsqueeze(1)
