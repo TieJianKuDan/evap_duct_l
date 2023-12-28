@@ -1,6 +1,8 @@
 .vscode/
-datasets/
+data/
 test.py
 __pycache__/
 logs/
 pretrained/
+*.jpg
+ckp/

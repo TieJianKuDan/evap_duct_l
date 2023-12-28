@@ -5,12 +5,12 @@ import torch
 from omegaconf import OmegaConf
 from pytorch_lightning import Trainer, callbacks, loggers, seed_everything
 
-from core.vae.vae_pl import VAEPLM
+from core.ld.diffusion_pl import CTUnetPL
 from scripts.data.dm import CelebaPLDM
 
 
 def main():
-    config = OmegaConf.load(open("scripts/vae/config.yaml", "r"))
+    config = OmegaConf.load(open("scripts/ld/config.yaml", "r"))
     seed_everything(
         seed=config.seed,
         workers=True
@@ -31,7 +31,7 @@ def main():
         dm.train_sample_num * config.optim.max_epochs / config.optim.batch_size
 
     # model
-    net = VAEPLM(config.model, config.loss, config.optim, total_num_steps)
+    net = CTUnetPL(config.model, config.optim, total_num_steps)
 
     # trainer
     trainer = Trainer(
@@ -39,7 +39,7 @@ def main():
         accelerator=config.optim.accelerator,
         logger=[
             loggers.TensorBoardLogger(
-                "./logs/tb/vae",
+                "./logs/tb/ld",
                 name="celeba",
             )
         ],
@@ -47,7 +47,7 @@ def main():
         enable_checkpointing=True,
         callbacks=[
             callbacks.ModelCheckpoint(
-                dirpath="ckp/vae",
+                dirpath="ckp/ld",
                 monitor=config.optim.monitor
             ),
             callbacks.EarlyStopping(
