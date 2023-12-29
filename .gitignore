@@ -1,8 +1,9 @@
-.vscode/
-data/
+.vscode
+data/*
 test.py
-__pycache__/
-logs/
-pretrained/
+__pycache__
+logs
+pretrained
 *.jpg
-ckp/
+ckp
+imgs
