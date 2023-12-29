@@ -6,7 +6,7 @@ from omegaconf import OmegaConf
 from pytorch_lightning import Trainer, callbacks, loggers, seed_everything
 
 from core.vae.vae_pl import VAEPLM
-from scripts.data.dm import CelebaPLDM
+from scripts.data.dm import EDHPLDM
 
 
 def main():
@@ -20,7 +20,7 @@ def main():
     )
 
     # data
-    dm = CelebaPLDM(
+    dm = EDHPLDM(
         config.dataset, 
         config.optim.batch_size,
         config.seed
@@ -39,7 +39,7 @@ def main():
         accelerator=config.optim.accelerator,
         logger=[
             loggers.TensorBoardLogger(
-                "./logs/tb/vae",
+                "./logs/edh/vae",
                 name="celeba",
             )
         ],
@@ -47,7 +47,7 @@ def main():
         enable_checkpointing=True,
         callbacks=[
             callbacks.ModelCheckpoint(
-                dirpath="ckp/vae",
+                dirpath="ckp/edh/vae",
                 monitor=config.optim.monitor
             ),
             callbacks.EarlyStopping(

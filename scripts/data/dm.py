@@ -116,10 +116,10 @@ class EDHDataset(Dataset):
         self.time = None
         for i in range(len(self._edh)):
             if self.edh is None:
-                self.edh = self._edh[i].EDH.data
+                self.edh = self._edh[i].EDH.data[:, :-1, :-1]
             else:
                 self.edh = np.concatenate(
-                    (self.edh, self._edh[i].EDH.data),
+                    (self.edh, self._edh[i].EDH.data[:, :-1, :-1]),
                     axis=0
                 )
             if self.time is None:
@@ -129,6 +129,7 @@ class EDHDataset(Dataset):
                     (self.time, self._edh[i].time.data),
                     axis=0
                 )
+        self.edh = np.expand_dims(self.edh, 1)
         del(self._edh)
         gc.collect()
 
@@ -183,8 +184,8 @@ class EDHPLDM(pl.LightningDataModule):
             self.train_set, 
             batch_size=self.batch_size, 
             shuffle=True,
-            num_workers=self.num_workers,
-            persistent_workers=self.persistent_workers
+            # num_workers=self.num_workers,
+            # persistent_workers=self.persistent_workers
         )
 
     def val_dataloader(self):
@@ -192,8 +193,8 @@ class EDHPLDM(pl.LightningDataModule):
             self.val_set, 
             batch_size=self.batch_size, 
             shuffle=False,
-            num_workers=self.num_workers,
-            persistent_workers=self.persistent_workers
+            # num_workers=self.num_workers,
+            # persistent_workers=self.persistent_workers
         )
 
     def test_dataloader(self):
@@ -201,6 +202,6 @@ class EDHPLDM(pl.LightningDataModule):
             self.test_set, 
             batch_size=self.batch_size, 
             shuffle=False,
-            num_workers=self.num_workers,
-            persistent_workers=self.persistent_workers
+            # num_workers=self.num_workers,
+            # persistent_workers=self.persistent_workers
         )
