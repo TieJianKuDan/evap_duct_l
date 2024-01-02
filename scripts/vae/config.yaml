@@ -4,6 +4,7 @@ dataset:
   test_ratio: 0.2
   num_workers: 4
   persistent_workers: True
+  seq_len: 1
 model:
   in_channels: 1
   out_channels: 1
@@ -23,7 +24,7 @@ loss:
 optim:
   accelerator: "gpu"
   precision: "16-mixed"
-  batch_size: 8
+  batch_size: 1
   float32_matmul_precision: "medium"
   method: "adam"
   lr: 1e-3

@@ -1,0 +1,74 @@
+seed:
+  2333
+dataset:
+  val_ratio: 0.2
+  test_ratio: 0.2
+  num_workers: 6
+  persistent_workers: True
+model:
+  input_shape: [0, 32, 32, 3]
+  target_shape: [1, 32, 32, 3]
+  base_units: 256
+  scale_alpha: 1.0
+  num_heads: 4
+  attn_drop: 0.1
+  proj_drop: 0.1
+  ffn_drop: 0.1
+  downsample: 2
+  downsample_type: "patch_merge"
+  upsample_type: "upsample"
+  upsample_kernel_size: 3
+  depth: [4, 4]
+  self_pattern: "axial"
+  num_global_vectors: 0
+  use_dec_self_global: false
+  dec_self_update_global: true
+  use_dec_cross_global: false
+  use_global_vector_ffn: false
+  use_global_self_attn: true
+  separate_global_qkv: true
+  global_dim_ratio: 1
+  ffn_activation: "gelu"
+  gated_ffn: false
+  norm_layer: "layer_norm"
+  padding_type: "zeros"
+  pos_embed_type: "t+h+w"
+  checkpoint_level: 0
+  use_relative_pos: true
+  self_attn_use_final_proj: true
+  attn_linear_init_mode: "0"
+  ffn_linear_init_mode: "0"
+  ffn2_linear_init_mode: "2"
+  attn_proj_linear_init_mode: "2"
+  conv_init_mode: "0"
+  down_up_linear_init_mode: "0"
+  global_proj_linear_init_mode: "2"
+  norm_init_mode: "0"
+  time_embed_channels_mult: 4
+  time_embed_use_scale_shift_norm: false
+  time_embed_dropout: 0.0
+  unet_res_connect: true
+  time_steps: 1000
+  given_betas: null
+  beta_schedule: "linear"
+  linear_start: 1e-4
+  linear_end: 2e-2
+  cosine_s: 8e-3
+optim:
+  accelerator: "gpu"
+  precision: "16-mixed"
+  batch_size: 16
+  float32_matmul_precision: "medium"
+  method: "adam"
+  lr: 1e-3
+  betas: [0.5, 0.9]
+  gradient_clip_val: 1.0
+  max_epochs: 500
+  # scheduler
+  warmup_percentage: 0.1
+  lr_scheduler_mode: "cosine"
+  min_lr_ratio: 1.0e-3
+  warmup_min_lr_ratio: 0.1
+  # early stopping
+  monitor: "val_loss"
+  patience: 5

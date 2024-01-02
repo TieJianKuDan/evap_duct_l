@@ -1,8 +1,7 @@
-from typing import Any
 import numpy as np
 import pytorch_lightning as pl
-from pytorch_lightning.utilities.types import STEP_OUTPUT
 import torch
+from einops import rearrange
 from torch.optim.lr_scheduler import CosineAnnealingLR, LambdaLR, SequentialLR
 
 from core.utils.optim import warmup_lambda
@@ -59,6 +58,7 @@ class VAEPLM(pl.LightningModule):
         opt_ae, opt_disc = self.optimizers()
         lr_ae, lr_disc = self.lr_schedulers()
 
+        batch = rearrange(batch, "b t h w c -> (b t) c h w")
         rec, posterior = self(batch)
         gen_loss, log = self.loss(
             batch, 
@@ -121,6 +121,7 @@ class VAEPLM(pl.LightningModule):
         )
 
     def validation_step(self, batch, batch_idx):
+        batch = rearrange(batch, "b t h w c -> (b t) c h w")
         rec, posterior = self(batch)
         gen_loss, log = self.loss(
             batch, 
@@ -177,6 +178,7 @@ class VAEPLM(pl.LightningModule):
         )
 
     def test_step(self, batch, batch_idx):
+        batch = rearrange(batch, "b t h w c -> (b t) c h w")
         rec, posterior = self(batch)
         gen_loss, log = self.loss(
             batch, 

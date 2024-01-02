@@ -99,45 +99,50 @@ class CelebaPLDM(pl.LightningDataModule):
     
 class EDHDataset(Dataset):
 
-    def __init__(self, root) -> None:
+    def __init__(self, root, seq_len) -> None:
         super().__init__()
-        self._edh = []
+        _edh = []
         for root, _, files in os.walk(root):  
             for filename in files:
-                self._edh.append(
+                _edh.append(
                     xr.open_dataset(os.path.join(root, filename))
                 )
-        self._edh = sorted(
-            self._edh, key=lambda _edh: _edh.time.data[0]
+        _edh = sorted(
+            _edh, key=lambda _edh: _edh.time.data[0]
         )
-        self.lon = self._edh[0].longitude.data[:-1]
-        self.lat = self._edh[0].latitude.data[:-1]
-        self.edh = None
-        self.time = None
-        for i in range(len(self._edh)):
-            if self.edh is None:
-                self.edh = self._edh[i].EDH.data[:, :-1, :-1]
+        self.lon = _edh[0].longitude.data[:-1]
+        self.lat = _edh[0].latitude.data[:-1]
+        edh = None
+        time = None
+        for i in range(len(_edh)):
+            if edh is None:
+                edh = _edh[i].EDH.data[:, :-1, :-1]
             else:
-                self.edh = np.concatenate(
-                    (self.edh, self._edh[i].EDH.data[:, :-1, :-1]),
+                edh = np.concatenate(
+                    (edh, _edh[i].EDH.data[:, :-1, :-1]),
                     axis=0
                 )
-            if self.time is None:
-                self.time = self._edh[i].time.data
+            if time is None:
+                time = _edh[i].time.data
             else:
-                self.time = np.concatenate(
-                    (self.time, self._edh[i].time.data),
+                time = np.concatenate(
+                    (time, _edh[i].time.data),
                     axis=0
                 )
-        self.edh = np.expand_dims(self.edh, 1)
-        del(self._edh)
-        gc.collect()
+        edh = np.expand_dims(edh, -1)
+
+        self.edh_seq = []
+        self.time_seq = []
+        self.seq_len = seq_len
+        for i in range(edh.shape[0] - self.seq_len + 1):
+            self.edh_seq.append(edh[i : i + self.seq_len])
+            self.time_seq.append(time[i : i + self.seq_len])
 
     def __len__(self) -> int:
-        return len(self.time)
+        return len(self.time_seq)
 
     def __getitem__(self, index: int):
-        return self.edh[index]
+        return self.edh_seq[index]
     
 class EDHPLDM(pl.LightningDataModule):
 
@@ -148,6 +153,7 @@ class EDHPLDM(pl.LightningDataModule):
         self.test_ratio = data_config.test_ratio
         self.num_workers = data_config.num_workers
         self.persistent_workers = data_config.persistent_workers
+        self.seq_len = data_config.seq_len
         self.batch_size = batch_size
         self.seed = seed
 
@@ -164,10 +170,10 @@ class EDHPLDM(pl.LightningDataModule):
         return len(self.test_set)
 
     def setup(self, stage=None):
-        datasets = EDHDataset(self.data_dir)
+        datasets = EDHDataset(self.data_dir, self.seq_len)
         self.lon = datasets.lon
         self.lat = datasets.lat
-        self.time = datasets.time
+        self.time = datasets.time_seq
         self.train_set, self.val_set, self.test_set = \
             random_split(
                 datasets, 
