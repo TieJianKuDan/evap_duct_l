@@ -39,8 +39,8 @@ def main():
         accelerator=config.optim.accelerator,
         logger=[
             loggers.TensorBoardLogger(
-                "./logs/edh/vae",
-                name="celeba",
+                "./logs/vae/",
+                name="edh",
             )
         ],
         precision=config.optim.precision,
@@ -58,7 +58,10 @@ def main():
         deterministic="warn",
     )
 
-    trainer.fit(net, dm)
+    trainer.fit(
+        net, dm,
+        ckpt_path=R"ckp\edh\vae\best.ckpt"
+    )
 
 if __name__ == "__main__":
     main()

@@ -15,7 +15,7 @@ model:
   latent_channels: 64
   norm_num_groups: 32
 loss:
-  disc_start: 10001
+  disc_start: 3001
   kl_weight: 1e-6
   disc_weight: 0.5
   perceptual_weight: 0.1

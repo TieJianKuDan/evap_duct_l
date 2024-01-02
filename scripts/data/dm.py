@@ -110,8 +110,8 @@ class EDHDataset(Dataset):
         self._edh = sorted(
             self._edh, key=lambda _edh: _edh.time.data[0]
         )
-        self.lon = self._edh[0].longitude.data
-        self.lat = self._edh[0].latitude.data
+        self.lon = self._edh[0].longitude.data[:-1]
+        self.lat = self._edh[0].latitude.data[:-1]
         self.edh = None
         self.time = None
         for i in range(len(self._edh)):
