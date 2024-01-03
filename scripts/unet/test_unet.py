@@ -14,7 +14,7 @@ from scripts.data.dm import CelebADataset
 
 
 def main():
-    config = OmegaConf.load(open("scripts/ld/config.yaml", "r"))
+    config = OmegaConf.load(open("scripts/unet/config.yaml", "r"))
     torch.set_float32_matmul_precision(
         config.optim.float32_matmul_precision
     )
