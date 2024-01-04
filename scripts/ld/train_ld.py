@@ -62,7 +62,7 @@ def main():
 
     trainer.fit(
         net, dm,
-        ckpt_path="ck/edh/ld/best.ckpt"
+        ckpt_path=R"ckp\edh\ld\best.ckpt"
     )
 
 if __name__ == "__main__":
