@@ -21,7 +21,7 @@ def main():
     )
 
     # data
-    test_set = EDHDataset("data\edh", 8)
+    test_set = EDHDataset("data\edh", 4)
     test_loader = DataLoader(test_set, 1, True)
 
     # model
@@ -35,12 +35,12 @@ def main():
 
     print(org.shape)
     print(rec.shape)
-    # fig = view.edh_subplot(
-    #     test_set.lon, test_set.lat, 
-    #     torch.cat((org.detach().cpu(), rec.detach().cpu()), 0).squeeze(1)
-    #     , 2, 8
-    # )
-    # fig.savefig("imgs/tmp.jpg")
+    fig = view.edh_subplot(
+        test_set.lon, test_set.lat, 
+        torch.cat((org.detach().cpu(), rec.detach().cpu()), 0).squeeze(1)
+        , 2, 4
+    )
+    fig.savefig("imgs/vae.jpg")
 
 if __name__ == "__main__":
     main()

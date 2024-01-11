@@ -1,0 +1,29 @@
+seed:
+  2333
+dataset:
+  val_ratio: 0.2
+  test_ratio: 0.2
+  num_workers: 4
+  persistent_workers: True
+model:
+  in_channels: 6
+  out_channels: 1
+  bilinear: True
+optim:
+  accelerator: "gpu"
+  precision: "16-mixed"
+  batch_size: 64
+  float32_matmul_precision: "medium"
+  method: "adam"
+  lr: 1e-3
+  betas: [0.5, 0.9]
+  gradient_clip_val: 1.0
+  max_epochs: 500
+  # scheduler
+  warmup_percentage: 0.1
+  lr_scheduler_mode: "cosine"
+  min_lr_ratio: 1.0e-3
+  warmup_min_lr_ratio: 0.1
+  # early stopping
+  monitor: "val_loss"
+  patience: 5

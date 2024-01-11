@@ -19,7 +19,7 @@ def main():
 
     # data
     test_set = EDHDataset("data\edh", 15)
-    test_loader = DataLoader(test_set, 1, True)
+    test_loader = DataLoader(test_set, 1, False)
 
     # model
     net = EDHLatentDiffusion.load_from_checkpoint(
@@ -42,7 +42,7 @@ def main():
         3,
         6
     )
-    fig.savefig("imgs/ld.jpg")
+    fig.savefig("imgs/ld2.jpg")
     
 
 if __name__ == "__main__":

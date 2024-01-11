@@ -12,9 +12,9 @@ def dt64todt(dt64):
     ts = to_datetime(dt64).timestamp()
     return datetime.fromtimestamp(ts)
 
-def edh_plot(lon, lat, data):
+def geo_plot(lon, lat, data, levels=None):
     fig = plt.figure(figsize=(5, 5))
-    proj = ccrs.PlateCarree(central_longitude=180)
+    proj = ccrs.PlateCarree(central_longitude=0)
     axe:Axes = plt.axes(projection=proj)
     axe.gridlines(
         draw_labels=True, dms=True, 
@@ -24,7 +24,6 @@ def edh_plot(lon, lat, data):
     axe.add_feature(cfeature.OCEAN)
     axe.add_feature(cfeature.LAND, edgecolor='b')
 
-    levels = [0,10,20,30,40,50,60,70,80,90]
     contours = axe.contourf(
         lon, lat, data, 
         levels=levels,
@@ -34,11 +33,39 @@ def edh_plot(lon, lat, data):
     fig.colorbar(contours, shrink=0.6, pad=0.15)
     return fig
 
+def edh_plot(lon, lat, data):
+    levels = [0,10,20,30,40,50,60,70,80,90]
+    return geo_plot(lon, lat, data, levels)
+
+def u10_plot(lon, lat, data):
+    levels = [-30,-25,-20,-15,-10,-5,0,5,10,15,20,25,30]
+    return geo_plot(lon, lat, data, levels)
+
+def v10_plot(lon, lat, data):
+    levels = [-30,-25,-20,-15,-10,-5,0,5,10,15,20,25,30]
+    return geo_plot(lon, lat, data, levels)
+
+def t2m_plot(lon, lat, data):
+    levels = [290,291,292,293,294,295,296,297,298,299,300,301,302]
+    return geo_plot(lon, lat, data, levels)
+
+def msl_plot(lon, lat, data):
+    levels = [100800,101000,101200,101400,101600,101800,102000,102200]
+    return geo_plot(lon, lat, data, levels)
+
+def sst_plot(lon, lat, data):
+    levels = [290,291,292,293,294,295,296,297,298,299,300,301,302]
+    return geo_plot(lon, lat, data, levels)
+
+def q2m_plot(lon, lat, data):
+    levels = [0.006,0.008,0.010,0.012,0.014,0.016,0.018,0.020]
+    return geo_plot(lon, lat, data, levels)
+
 def edh_subplot(lon, lat, data, row, col):
     fig = plt.figure(
         figsize=(5*col, 5*row)
     )
-    proj = ccrs.PlateCarree(central_longitude=180)
+    proj = ccrs.PlateCarree(central_longitude=0)
     axes = fig.subplots(
         row, col, 
         subplot_kw={'projection':proj}
