@@ -325,8 +325,8 @@ class ERA5PLDM(pl.LightningDataModule):
 
     def __init__(self, data_config, batch_size, seed):
         super(ERA5PLDM, self).__init__()
-        self.edh_dir = root_dir + "/data/edh/2021"
-        self.era5_dir = root_dir + "/data/era5/2021"
+        self.edh_dir = root_dir + "/data/train/edh/"
+        self.era5_dir = root_dir + "/data/train/era5/"
         self.val_ratio = data_config.val_ratio
         self.test_ratio = data_config.test_ratio
         self.num_workers = data_config.num_workers
@@ -367,8 +367,8 @@ class ERA5PLDM(pl.LightningDataModule):
             self.train_set, 
             batch_size=self.batch_size, 
             shuffle=True,
-            # num_workers=self.num_workers,
-            # persistent_workers=self.persistent_workers
+            num_workers=self.num_workers,
+            persistent_workers=self.persistent_workers
         )
 
     def val_dataloader(self):
@@ -376,8 +376,8 @@ class ERA5PLDM(pl.LightningDataModule):
             self.val_set, 
             batch_size=self.batch_size, 
             shuffle=False,
-            # num_workers=self.num_workers,
-            # persistent_workers=self.persistent_workers
+            num_workers=self.num_workers,
+            persistent_workers=self.persistent_workers
         )
 
     def test_dataloader(self):
@@ -385,6 +385,6 @@ class ERA5PLDM(pl.LightningDataModule):
             self.test_set, 
             batch_size=self.batch_size, 
             shuffle=False,
-            # num_workers=self.num_workers,
-            # persistent_workers=self.persistent_workers
+            num_workers=self.num_workers,
+            persistent_workers=self.persistent_workers
         )

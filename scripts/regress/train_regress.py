@@ -39,15 +39,15 @@ def main():
         accelerator=config.optim.accelerator,
         logger=[
             loggers.TensorBoardLogger(
-                "./logs/regress",
-                name="edh",
+                "./logs/era5",
+                name="regress",
             )
         ],
         precision=config.optim.precision,
         enable_checkpointing=True,
         callbacks=[
             callbacks.ModelCheckpoint(
-                dirpath="ckp/edh/regress",
+                dirpath="ckp/era5/regress",
                 monitor=config.optim.monitor
             ),
             callbacks.EarlyStopping(

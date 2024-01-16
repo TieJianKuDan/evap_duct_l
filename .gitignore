@@ -8,3 +8,4 @@ pretrained
 ckp
 imgs
 *.sh
+slurm
