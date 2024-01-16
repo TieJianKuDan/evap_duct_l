@@ -109,36 +109,29 @@ class EDHDataset(Dataset):
 
     def __init__(self, root, seq_len) -> None:
         super().__init__()
+        # load data
         _edh = []
         for root, _, files in os.walk(root):  
             for filename in files:
                 _edh.append(
-                    xr.open_dataset(os.path.join(root, filename))
+                    xr.open_dataset(os.path.join(root, filename)).EDH
                 )
         _edh = sorted(
             _edh, key=lambda _edh: _edh.time.data[0]
         )
         self.lon = _edh[0].longitude.data[:-1]
         self.lat = _edh[0].latitude.data[:-1]
-        edh = None
-        time = None
-        for i in range(len(_edh)):
-            if edh is None:
-                edh = _edh[i].EDH.data[:, :-1, :-1]
-            else:
-                edh = np.concatenate(
-                    (edh, _edh[i].EDH.data[:, :-1, :-1]),
-                    axis=0
-                )
-            if time is None:
-                time = _edh[i].time.data
-            else:
-                time = np.concatenate(
-                    (time, _edh[i].time.data),
-                    axis=0
-                )
-        edh = np.expand_dims(edh, -1)
+        edh = [None] * len(_edh)
+        time = [None] * len(_edh)
+        for i in range(len(edh)):
+            edh[i] = _edh[i].data[:, :-1, :-1]
+            time[i] = _edh[i].time.data
 
+        edh = np.concatenate(edh, axis=0)
+        edh = np.expand_dims(edh, -1)
+        time = np.concatenate(time, axis=0)
+
+        # slide window
         self.edh_seq = []
         self.time_seq = []
         self.seq_len = seq_len
@@ -151,7 +144,7 @@ class EDHDataset(Dataset):
 
     def __getitem__(self, index: int):
         return self.edh_seq[index]
-    
+
 class EDHPLDM(pl.LightningDataModule):
 
     def __init__(self, data_config, batch_size, seed):
@@ -219,96 +212,115 @@ class EDHPLDM(pl.LightningDataModule):
             # num_workers=self.num_workers,
             # persistent_workers=self.persistent_workers
         )
-    
+
 class ERA5Dataset(Dataset):
 
     def __init__(self, edh, era5) -> None:
         super().__init__()
-        _edhs = []
+        # load edh(time, lat, lon)
+        _edh = []
         for root, _, files in os.walk(edh):  
             for filename in files:
-                _edhs.append(
-                    xr.open_dataset(os.path.join(root, filename))
+                _edh.append(
+                    xr.load_dataset(os.path.join(root, filename)).EDH
                 )
-        _edhs = sorted(
-            _edhs, key=lambda _edh: _edh.time.data[0]
+        _edh = sorted(
+            _edh, key=lambda _edh: _edh.time.data[0]
         )
-        self.lon = _edhs[0].longitude.data[:-1]
-        self.lat = _edhs[0].latitude.data[:-1]
-        self.edh = None
-        self.time = None
-        for _edh in _edhs:
-            if self.edh is None:
-                self.edh = _edh.EDH.data[:, :-1, :-1]
-            else:
-                self.edh = np.concatenate((
-                    self.edh, _edh.EDH.data[:, :-1, :-1]), 0)
-            if self.time is None:
-                self.time = _edh.time.data
-            else:
-                self.time = np.concatenate((
-                    self.time, _edh.time.data), 0)
+        self.lon = _edh[0].longitude.data[:-1]
+        self.lat = _edh[0].latitude.data[:-1]
+        self.edh, self.time = self.__handle_edh(_edh)
+        gc.collect()
 
-        _era5s = []
+        # load era5=[time, lat, lon]
+        _era5 = []
         for root, _, files in os.walk(era5):  
             for filename in files:
-                _era5s.append(
-                    xr.open_dataset(os.path.join(root, filename))
+                _era5.append(
+                    xr.load_dataset(os.path.join(root, filename))
                 )
-        _era5s = sorted(
-            _era5s, key=lambda _era5: _era5.time.data[0]
+        _era5 = sorted(
+            _era5, key=lambda _era5: _era5.time.data[0]
         )
-        self.u10 = None
-        self.v10 = None
-        self.t2m = None
-        self.msl = None
-        self.sst = None
-        self.q2m = None
-        for _era5 in _era5s:
-            if self.u10 is None:
-                self.u10 = _era5.u10.data[:, :-1, :-1]
-            else:
-                self.u10 = np.concatenate((
-                    self.u10, _era5.u10.data[:, :-1, :-1]), 0)
-            
-            if self.v10 is None:
-                self.v10 = _era5.v10.data[:, :-1, :-1]
-            else:
-                self.v10 = np.concatenate((
-                    self.v10, _era5.v10.data[:, :-1, :-1]), 0) 
-                
-            if self.t2m is None:
-                self.t2m = _era5.t2m.data[:, :-1, :-1]
-            else:
-                self.t2m = np.concatenate((
-                    self.t2m, _era5.t2m.data[:, :-1, :-1]), 0) 
-                
-            if self.msl is None:
-                self.msl = _era5.msl.data[:, :-1, :-1]
-            else:
-                self.msl = np.concatenate((
-                    self.msl, _era5.msl.data[:, :-1, :-1]), 0) 
-
-            if self.sst is None:
-                self.sst = _era5.sst.data[:, :-1, :-1]
-            else:
-                self.sst = np.concatenate((
-                    self.sst, _era5.sst.data[:, :-1, :-1]), 0) 
-
-            if self.q2m is None:
-                self.q2m = _era5.q2m.data[:, :-1, :-1]
-            else:
-                self.q2m = np.concatenate((
-                    self.q2m, _era5.q2m.data[:, :-1, :-1]), 0) 
-        self.u10 = normlize(self.u10)
-        self.v10 = normlize(self.v10)
-        self.t2m = normlize(self.t2m)
-        self.msl = normlize(self.msl)
-        self.sst = normlize(self.sst)
-        self.q2m = normlize(self.q2m)
+        self.u10 = self.__handle_u10(_era5)
+        gc.collect()
+        self.v10 = self.__handle_v10(_era5)
+        gc.collect()
+        self.t2m = self.__handle_t2m(_era5)
+        gc.collect()
+        self.msl = self.__handle_msl(_era5)
+        gc.collect()
+        self.sst = self.__handle_sst(_era5)
+        gc.collect()
+        self.q2m = self.__handle_q2m(_era5)
+        gc.collect()
 
     def __len__(self) -> int:
         return len(self.time)
+
+    def __handle_edh(self, _edh:list):
+        edh = [None] * len(_edh)
+        time = [None] * len(_edh)
+        for i in range(len(_edh)):
+            edh[i] = _edh[i].data[:, :-1, :-1]
+            time[i] = _edh[i].time.data
+        edh = np.concatenate(edh, axis=0)
+        time = np.concatenate(time, axis=0)
+        return (edh, time)
+
+    def __handle_u10(self, _era5:list):
+        u10 = [None] * len(_era5)
+        for i in range(len(_era5)):
+            u10[i] = _era5[i].u10.data[:, :-1, :-1]
+        u10 = np.concatenate(u10, axis=0)
+        # delete NaN and Normalize
+        u10 = normlize(u10)
+        return u10
+
+    def __handle_v10(self, _era5:list):
+        v10 = [None] * len(_era5)
+        for i in range(len(_era5)):
+            v10[i] = _era5[i].v10.data[:, :-1, :-1]
+        v10 = np.concatenate(v10, axis=0)
+        # delete NaN and Normalize
+        v10 = normlize(v10)
+        return v10
+
+    def __handle_t2m(self, _era5:list):
+        t2m = [None] * len(_era5)
+        for i in range(len(_era5)):
+            t2m[i] = _era5[i].t2m.data[:, :-1, :-1]
+        t2m = np.concatenate(t2m, axis=0)
+        # delete NaN and Normalize
+        t2m = normlize(t2m)
+        return t2m
+
+    def __handle_msl(self, _era5:list):
+        msl = [None] * len(_era5)
+        for i in range(len(_era5)):
+            msl[i] = _era5[i].msl.data[:, :-1, :-1]
+        msl = np.concatenate(msl, axis=0)
+        # delete NaN and Normalize
+        msl = normlize(msl)
+        return msl
+
+    def __handle_sst(self, _era5:list):
+        sst = [None] * len(_era5)
+        for i in range(len(_era5)):
+            sst[i] = _era5[i].sst.data[:, :-1, :-1]
+        sst = np.concatenate(sst, axis=0)
+        # delete NaN and Normalize
+        sst = normlize(sst)
+        return sst
+
+    def __handle_q2m(self, _era5:list):
+        q2m = [None] * len(_era5)
+        for i in range(len(_era5)):
+            q2m[i] = _era5[i].q2m.data[:, :-1, :-1]
+        q2m = np.concatenate(q2m, axis=0)
+        # delete NaN and Normalize
+        q2m = normlize(q2m)
+        return q2m
 
     def __getitem__(self, index: int):
         return (
